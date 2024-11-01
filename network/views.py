@@ -4,11 +4,19 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 
-from .models import User
+from .models import User, Post, Follower
 
 
 def index(request):
-    return render(request, "network/index.html")
+    if request.method == "POST":
+        data = request.POST.get("post")
+        post_data = Post(post_username = request.user, post_content = data, likes = 0)
+        post_data.save()
+        return HttpResponseRedirect(reverse("index"))
+    all_posts = Post.objects.all()
+    return render(request, "network/index.html", {
+        "posts": all_posts
+    })
 
 
 def login_view(request):
