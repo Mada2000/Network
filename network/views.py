@@ -3,19 +3,56 @@ from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
 
 from .models import User, Post, Follower
 
+@csrf_exempt
+def decrement_likes(request, post_id):
+    if request.method == 'POST':
+        # get the selected post by id and decrease the likes count by 1
+        post = Post.objects.get(id=post_id)
+        post.likes -= 1
+        post.save()
+
+        # remove the liked post to the like posts list of the user and save it
+        liked_post = Follower.objects.get(user = request.user)
+        liked_post.liked_posts.remove(post)
+        liked_post.save()
+        return JsonResponse({'likes': post.likes})
+
+@csrf_exempt
+def increment_likes(request, post_id):
+    if request.method == 'POST':
+        # get the selected post by id and increase the likes count by 1
+        post = Post.objects.get(id=post_id)
+        post.likes += 1
+        post.save()
+
+        # add the liked post to the like posts list of the user and save it
+        liked_post = Follower.objects.get(user = request.user)
+        liked_post.liked_posts.add(post)
+        liked_post.save()
+        return JsonResponse({'likes': post.likes})
 
 def index(request):
     if request.method == "POST":
+        #make a new post and add it to the database
         data = request.POST.get("post")
         post_data = Post(post_username = request.user, post_content = data, likes = 0)
         post_data.save()
         return HttpResponseRedirect(reverse("index"))
+    
+    # get all the posts
     all_posts = Post.objects.all()
+
+    # get all the user's liked posts 
+    user_liked_post_list = Follower.objects.get(user=request.user).liked_posts.all()
     return render(request, "network/index.html", {
-        "posts": all_posts
+        "posts": all_posts,
+        "user_liked_post_list" : user_liked_post_list
     })
 
 
@@ -61,6 +98,8 @@ def register(request):
         try:
             user = User.objects.create_user(username, email, password)
             user.save()
+            user_activity = Follower(user = request.user, following_count = 0, followers_count = 0)
+            user_activity.save()
         except IntegrityError:
             return render(request, "network/register.html", {
                 "message": "Username already taken."

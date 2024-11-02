@@ -3,7 +3,7 @@
 {% block body %}
     <form action="{% url 'index' %}" method="post">
         {% csrf_token %}
-        <input type="text" name="post">
+        <input type="text" name="post" placeholder="What's in your mind? ">
         <button type="submit">Post</button>
     </form>
     {% for post in posts %}
@@ -11,7 +11,14 @@
             {{ post.post_username }}
             {{ post.post_content }}
             {{ post.date }}
-            {{ post.likes }}
+            <p class="like-count">{{ post.likes }} likes</p>
+            {% if post in user_liked_post_list %}
+                <button class="unlike-button" data-post-id="{{ post.id }}">unlike</button>
+                <button style="display: none;" class="like-button" data-post-id="{{ post.id }}">like</button>
+            {% else %}
+                <button style="display: none;" class="unlike-button" data-post-id="{{ post.id }}">unlike</button>
+                <button class="like-button" data-post-id="{{ post.id }}">Like</button>
+            {% endif %}
         </div>
         
     {% endfor %}
