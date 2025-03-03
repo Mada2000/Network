@@ -4,7 +4,6 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 from django.http import JsonResponse
-from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
 
 from .models import User, Post, Follower
@@ -45,6 +44,10 @@ def index(request):
         post_data.save()
         return HttpResponseRedirect(reverse("index"))
     
+    # if the user isn't signed in redirect to login page
+    if not request.user.is_authenticated:
+        return HttpResponseRedirect(reverse("login"))
+        
     # get all the posts
     all_posts = Post.objects.all()
 
@@ -55,6 +58,19 @@ def index(request):
         "user_liked_post_list" : user_liked_post_list
     })
 
+def profile(request):
+    user_stats = Follower.objects.get(user = request.user)
+
+    return render(request, "network/profile.html", {
+        "user_stats" : user_stats
+    })
+
+def user_profile(request, user_id):
+    user_stats = Follower.objects.get(user = user_id)
+
+    return render(request, "network/user_profile.html", {
+        "user_stats" : user_stats
+    })
 
 def login_view(request):
     if request.method == "POST":
@@ -98,7 +114,7 @@ def register(request):
         try:
             user = User.objects.create_user(username, email, password)
             user.save()
-            user_activity = Follower(user = request.user, following_count = 0, followers_count = 0)
+            user_activity = Follower(user = user, following_count = 0, followers_count = 0)
             user_activity.save()
         except IntegrityError:
             return render(request, "network/register.html", {

@@ -1,0 +1,12 @@
+{% extends "network/layout.html" %}
+{% block title %}
+Profile Page
+{% endblock %}
+{% block body %}
+{{ user.username }}
+
+<h3>{{ user_stats.following_count }} following</h3>
+<h3>{{ user_stats.followers_count }} followers</h3>
+    
+
+{% endblock %}
