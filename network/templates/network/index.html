@@ -8,7 +8,7 @@
     </form>
     {% for post in posts %}
         <div>
-            <a href="{% url 'user_profile' post.post_username %}">{{ post.post_username }}</a>
+            <a href="{% url 'user_profile' username=post.post_username %}">{{ post.post_username }}</a>
             {{ post.post_content }}
             {{ post.date }}
             <p class="like-count">{{ post.likes }} likes</p>

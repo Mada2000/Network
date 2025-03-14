@@ -3,10 +3,30 @@
 Profile Page
 {% endblock %}
 {% block body %}
-{{ user.username }}
+{{ user_stats.user.username }}
+
+{% csrf_token %}
+<!-- <button method="POST" action="{% url 'follow' username=user_stats.user.username %}">Follow</button> -->
+<button class="follow-button" data-username="{{ user_stats.user.username }}">Follow</button>
+<button class="unfollow-button" style="display: none;" data-username="{{ user_stats.user.username }}">Unfollow</button>
 
 <h3>{{ user_stats.following_count }} following</h3>
 <h3>{{ user_stats.followers_count }} followers</h3>
     
+{% for post in user_posts %}
+<div>
+    <a href="{% url 'user_profile' username=post.post_username %}">{{ post.post_username }}</a>
+    {{ post.post_content }}
+    {{ post.date }}
+    <p class="like-count">{{ post.likes }} likes</p>
+    {% if post in main_user_liked_post_list %}
+        <button class="unlike-button" data-post-id="{{ post.id }}">unlike</button>
+        <button style="display: none;" class="like-button" data-post-id="{{ post.id }}">like</button>
+    {% else %}
+        <button style="display: none;" class="unlike-button" data-post-id="{{ post.id }}">unlike</button>
+        <button class="like-button" data-post-id="{{ post.id }}">Like</button>
+    {% endif %}
+</div>
 
+{% endfor %}
 {% endblock %}

@@ -4,8 +4,27 @@ document.addEventListener('DOMContentLoaded', function () {
     let buttons = document.querySelectorAll('.like-button');
     let texts = document.querySelectorAll('.like-count');
     let unlike_buttons = document.querySelectorAll('.unlike-button');
-
-    
+    let follow_button = document.querySelector('.follow-button');
+ 
+    // add an event lisenter to the follow button when clicked make an API call to follow the user
+    follow_button.addEventListener('click', function () {
+        console.log('follow button clicked')
+        const username = this.getAttribute('data-username');
+        function Get_Cookie(check_name) {
+            return check_name
+        }
+        fetch(`/follow/${username}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': Get_Cookie('csrftoken'),
+            },
+        })
+            .then(response => response.json())
+            .then(data => {
+                follow_button.style.display = 'none';
+                document.querySelector('.unfollow-button').style.display = 'block'
+            });
+    });
 
     // add an event lisenter to every button when clicked make an API call to increase the like count by 1 
     buttons.forEach(function (button, index) {

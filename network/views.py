@@ -65,12 +65,31 @@ def profile(request):
         "user_stats" : user_stats
     })
 
-def user_profile(request, user_id):
-    user_stats = Follower.objects.get(user = user_id)
+def user_profile(request, username):
+    user_stats = Follower.objects.get(user__username = username)
+    user_posts = Post.objects.filter(post_username__username=username).all()
+    main_user_liked_post_list = Follower.objects.get(user=request.user).liked_posts.all()
+
 
     return render(request, "network/user_profile.html", {
-        "user_stats" : user_stats
+        "user_stats" : user_stats,
+        "user_posts" : user_posts,
+        "main_user_liked_post_list" : main_user_liked_post_list
     })
+
+
+#ToDO: the javascript function to follow a user gets an error and the follow function doesn't work
+#need to modify user_profile.html and the follow function in posts.js to make it work
+@csrf_exempt
+def follow(request, username):
+    if request.method == 'POST':
+        # add new follower to the followers list and increase the followers by 1
+        new_follower = Follower.objects.get(user__username=username)
+        new_follower.followers_list.add(new_follower)
+        new_follower.followers_count += 1
+
+        # Save the changes
+        new_follower.save()
 
 def login_view(request):
     if request.method == "POST":
